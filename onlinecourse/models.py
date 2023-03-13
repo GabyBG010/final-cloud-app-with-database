@@ -107,7 +107,7 @@ class Question(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
     # question text
-    question = models.CharField(max_length=500)
+    text = models.TextField(default="Default Value")
     # question grade/mark
     grade  = models.FloatField()
     # <HINT> A sample model method to calculate if learner get the score of the question
@@ -129,7 +129,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     isCorrect = models.BooleanField(default=False)
-    content =  models.CharField(max_length=500,default='default content')
+    content =  models.TextField(default="Default Value")
 
 
 # <HINT> The submission model
