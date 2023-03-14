@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.views import generic
 from django.contrib.auth import login, logout, authenticate
 import logging
+import datetime
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -112,10 +113,12 @@ def enroll(request, course_id):
 def submit(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     user = request.user
-    Enrollment.objects.get(user = user,course=course,date_enrolled=date.today(),mode=AUDIT,rating = 1)
+    enrollment = Enrollment.objects.get(user = user,course=course)
     choices = extract_answers(request)
-    Submission.objects.create(choices=choices, enrollment=enrollment)
-    return redirect("onlinecourse:show_exam_result")
+    submission = Submission.objects.create(enrollment=enrollment)
+    submission.choices.set(choices)
+    submission.save
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course_id, submission.id,)))
 
 
 
@@ -139,6 +142,23 @@ def extract_answers(request):
 def show_exam_result(request, course_id, submission_id):
     course = get_object_or_404(Course, pk=course_id)
     submission = get_object_or_404(Submission,pk=submission_id)
+    answers = extract_answers(request)
+    total_score = 0
+    for choice in answers:
+        if choice.isCorrect:
+            total_score += choice.question.grade
+      
+    context={
+        "grade":total_score,
+        ## "results":result_set,
+        "submission":submission
+        }
+ 
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
+        
+        
+
+
     total_score = 0
     # is_get_score
         
